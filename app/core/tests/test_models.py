@@ -1,7 +1,11 @@
 """Test for models"""
 
+from decimal import Decimal
+
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+
+from core import models
 
 class ModelTests(TestCase):
     """Test Models."""
@@ -48,3 +52,24 @@ class ModelTests(TestCase):
 
         self.assertTrue(user.is_superuser) # is_superuser is included in PermissionsMixin
         self.assertTrue(user.is_staff)
+
+    def test_create_medicine(self):
+        """Test creating a new medicine"""
+        user = get_user_model().objects.create_user(
+            'test@example.com',
+            'testpass123',
+        )
+        medicine = models.Medicine.objects.create(
+            user = user,
+            name = 'Sample Medicine',
+            ref_text = 'Sample Reference Text',
+            dispensing_size = 'Sample Dispensing Size',
+            indication = 'Sample Indication',
+            dosage = 'Sample Dosage',
+            precautions = 'Sample Precautions',
+            preferred_use = 'Sample Preferred Use',
+        )
+
+        self.assertEqual(str(medicine), medicine.name)
+
+

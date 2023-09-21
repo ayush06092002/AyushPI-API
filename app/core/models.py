@@ -1,5 +1,6 @@
 """Database Models."""
 
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import (
     AbstractBaseUser,
@@ -40,3 +41,23 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
+
+class Medicine(models.Model):
+    """Medicine object"""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    name = models.CharField(max_length=255)
+    ref_text = models.CharField(max_length=255)
+    dispensing_size = models.CharField(max_length=255)
+    indication = models.CharField(max_length=255)
+    dosage = models.CharField(max_length=255)
+    precautions = models.TextField(max_length=255)
+    preferred_use = models.CharField(max_length=255)
+
+    def __str__(self):
+        """Return string representation of medicine."""
+        return self.name
+
