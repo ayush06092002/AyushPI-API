@@ -27,11 +27,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterField(
             model_name='medicine',
-            name='indication',
-            field=models.CharField(max_length=255),
-        ),
-        migrations.AlterField(
-            model_name='medicine',
             name='precautions',
             field=models.TextField(max_length=255),
         ),

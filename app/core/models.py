@@ -52,12 +52,23 @@ class Medicine(models.Model):
     name = models.CharField(max_length=255)
     ref_text = models.CharField(max_length=255)
     dispensing_size = models.CharField(max_length=255)
-    indication = models.CharField(max_length=255)
     dosage = models.CharField(max_length=255)
     precautions = models.TextField(max_length=255)
     preferred_use = models.CharField(max_length=255)
+    symptoms = models.ManyToManyField('Symptom')
 
     def __str__(self):
         """Return string representation of medicine."""
         return self.name
 
+class Symptom(models.Model):
+    """Symptoms for medicines"""
+    name = models.TextField(max_length=400)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+
+    def __str__(self):
+        """Return string representation of symptom."""
+        return self.name

@@ -19,7 +19,6 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=255)),
                 ('ref_text', models.CharField(max_length=10)),
                 ('dispensing_size', models.CharField(max_length=20)),
-                ('indication', models.TextField()),
                 ('dosage', models.CharField(max_length=50)),
                 ('precautions', models.TextField()),
                 ('preferred_use', models.CharField(max_length=20)),

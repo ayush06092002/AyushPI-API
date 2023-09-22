@@ -10,6 +10,7 @@ from core import models
 class ModelTests(TestCase):
     """Test Models."""
 
+
     def test_create_user_with_email_successful(self):
         """Test creating a new user with an email is successful."""
 
@@ -64,12 +65,26 @@ class ModelTests(TestCase):
             name = 'Sample Medicine',
             ref_text = 'Sample Reference Text',
             dispensing_size = 'Sample Dispensing Size',
-            indication = 'Sample Indication',
             dosage = 'Sample Dosage',
             precautions = 'Sample Precautions',
             preferred_use = 'Sample Preferred Use',
         )
 
         self.assertEqual(str(medicine), medicine.name)
+
+    def test_create_symptoms(self):
+        """Test creating a new symptom"""
+        user = get_user_model().objects.create_user(
+            'test@example.com',
+            'testpass123',
+        )
+        symptom = models.Symptom.objects.create(
+            user = user,
+            name = 'Sample Symptom',
+        )
+
+        self.assertEqual(str(symptom), symptom.name)
+
+
 
 
