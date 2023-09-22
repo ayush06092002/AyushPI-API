@@ -18,9 +18,9 @@ from medicine.serializers import (
 
 MEDICINES_URL = reverse('medicine:medicine-list')
 
-def detail_url(medicine_id):
+def detail_url(medicine_name):
     """Create and return a medicine detail URL"""
-    return reverse('medicine:medicine-detail', args=[medicine_id])
+    return reverse('medicine:medicine-detail', args=[medicine_name])
 
 
 def create_medicine(user, **params):
@@ -191,7 +191,7 @@ class PrivateMedicineAPITests(TestCase):
         new_user = create_user(email = 'user2@exampl.com' , password = 'test123')
         medicine = create_medicine(user=new_user)
 
-        url = detail_url(medicine.id)
+        url = detail_url(medicine.name)
         res = self.client.delete(url)
 
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)

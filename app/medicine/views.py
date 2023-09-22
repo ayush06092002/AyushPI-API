@@ -37,7 +37,10 @@ class MedicineViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
 
-class SymptomViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+class SymptomViewSet(mixins.DestroyModelMixin,
+                    mixins.UpdateModelMixin,
+                    mixins.ListModelMixin,
+                    viewsets.GenericViewSet):
     """Manage symptoms in the database"""
     serializer_class = serializers.SymptomSerializer
     queryset = Symptom.objects.all()

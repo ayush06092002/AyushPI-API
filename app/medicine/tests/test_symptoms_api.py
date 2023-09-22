@@ -75,9 +75,21 @@ class PrivateSymptomsAPITests(TestCase):
         symptom = Symptom.objects.create(user=self.user, name='Sample symptom')
         payload = {'name': 'Updated symptom'}
 
-        url = detail_url(symptom.name)
+        url = detail_url(symptom.id)
         res = self.client.patch(url, payload)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         symptom.refresh_from_db()
         self.assertEqual(symptom.name, payload['name'])
+
+    def test_delete_symptom(self):
+        """Test deleting a symptom"""
+        symptom = Symptom.objects.create(user=self.user, name='Sample symptom')
+
+        url = detail_url(symptom.id)
+        res = self.client.delete(url)
+
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+        symptoms = Symptom.objects.filter(user = self.user)
+        self.assertFalse(symptoms.exists())
+
