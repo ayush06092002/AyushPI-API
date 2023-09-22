@@ -261,7 +261,7 @@ class PrivateMedicineAPITests(TestCase):
         res = self.client.patch(url, payload, format = 'json')
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        new_symptom = Symptom.objects.get(user = self.user, name = 'Sample symptom Updated')
+        new_symptom = Symptom.objects.get(user = self.user, name = 'Sample symptom')
         self.assertIn(new_symptom, medicine.symptoms.all())
 
     def test_update_medicine_assign_symptom(self):
