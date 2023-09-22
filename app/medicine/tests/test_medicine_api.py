@@ -9,7 +9,10 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Medicine
+from core.models import (
+    Medicine,
+    Symptom,
+)
 
 from medicine.serializers import (
     MedicineSerializer,
@@ -196,3 +199,82 @@ class PrivateMedicineAPITests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
         self.assertTrue(Medicine.objects.filter(id=medicine.id).exists())
+
+    def create_medicine_with_new_symptom(self):
+        """Test creating a recipe with new symptoms"""
+        payload = {
+            'name': 'Sample medicine',
+            'ref_text': 'AFI',
+            'dispensing_size': '200 ml',
+            'dosage': '12 - 24 ml',
+            'precautions': 'NS',
+            'preferred_use': 'Both',
+            'symptoms': [{'name': 'Sample symptom'}, {'name': 'Sample symptom 2'}],
+        }
+        res = self.client.post(MEDICINES_URL, payload, format = 'json')
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        medicines = Medicine.objects.filter(user=self.user)
+        self.assertEqual(medicines.count(), 1)
+        medicine = medicines[0]
+        self.assertEqual(medicine.symptoms.count(), 2)
+        for symptom in payload['symptoms']:
+            exists = medicine.symptoms.filter(
+                name = symptom['name'],
+                user = self.user,
+            ).exists()
+            self.assertTrue(exists)
+
+    def test_create_medicine_with_existing_symptom(self):
+        """Test creating a recipe with existing symptoms"""
+        symptom = Symptom.objects.create(user=self.user, name='Sample symptom')
+        payload = {
+            'name': 'Sample medicine test',
+            'ref_text': 'AFI',
+            'dispensing_size': '200 ml',
+            'dosage': '12 - 24 ml',
+            'precautions': 'NS',
+            'preferred_use': 'Both',
+            'symptoms': [{'name': 'Sample symptom'}, {'name': 'Sample symptom 2'}],
+        }
+        res = self.client.post(MEDICINES_URL, payload, format = 'json')
+
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        medicines = Medicine.objects.filter(user=self.user)
+        self.assertEqual(medicines.count(), 1)
+        medicine = medicines[0]
+        self.assertEqual(medicine.symptoms.count(), 2) # 2 because one symptom already exists else if a new would be creared it would have been 3
+        self.assertIn(symptom, medicine.symptoms.all())
+        for symptom in payload['symptoms']:
+            exists = medicine.symptoms.filter(
+                name = symptom['name'],
+                user = self.user,
+            ).exists()
+            self.assertTrue(exists)
+
+    def test_create_symptom_on_update(self):
+        """Test creating a symptom on updating a medicine"""
+        medicine = create_medicine(user=self.user)
+
+        payload = {'symptoms': [{'name': 'Sample symptom'}]}
+        url = detail_url(medicine.id)
+        res = self.client.patch(url, payload, format = 'json')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        new_symptom = Symptom.objects.get(user = self.user, name = 'Sample symptom Updated')
+        self.assertIn(new_symptom, medicine.symptoms.all())
+
+    def test_update_medicine_assign_symptom(self):
+        """Test assigning an existing symptom while updating a medicine"""
+        symptom1 = Symptom.objects.create(user=self.user, name='Sample symptom 1')
+        medicine = create_medicine(user=self.user)
+        medicine.symptoms.add(symptom1)
+
+        symptom2 = Symptom.objects.create(user=self.user, name='Sample symptom 2')
+        payload = {'symptoms': [{'name': 'Sample symptom 2'}]}
+        url = detail_url(medicine.id)
+        res = self.client.patch(url, payload, format = 'json')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn(symptom2, medicine.symptoms.all())
+        self.assertNotIn(symptom1, medicine.symptoms.all())
