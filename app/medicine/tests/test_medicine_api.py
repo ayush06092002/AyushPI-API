@@ -74,7 +74,7 @@ class PrivateMedicineAPITests(TestCase):
 
         res = self.client.get(MEDICINES_URL)
 
-        medicines = Medicine.objects.all().order_by('-id')
+        medicines = Medicine.objects.all().order_by('-name')
         serializer = MedicineSerializer(medicines, many=True)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
@@ -278,3 +278,30 @@ class PrivateMedicineAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertIn(symptom2, medicine.symptoms.all())
         self.assertNotIn(symptom1, medicine.symptoms.all())
+
+    def test_filter_medicine_by_symptoms(self):
+        """Test filtering medicines by symptoms"""
+        m1 = create_medicine(user=self.user, name='Sample medicine 1')
+        m2 = create_medicine(user=self.user, name='Sample medicine 2')
+        symptom1 = Symptom.objects.create(user=self.user, name='Sample symptom 1')
+        symptom2 = Symptom.objects.create(user=self.user, name='Sample symptom 2')
+        m1.symptoms.add(symptom1)
+        m2.symptoms.add(symptom2)
+        m3 = create_medicine(user=self.user, name='Sample medicine 3')
+
+        # symptom_names = ['Sample symptom 1', 'Sample symptom 2']
+        # symptoms = Symptom.objects.filter(name__in=symptom_names)
+
+        # symptom_ids = [symptom.id for symptom in symptoms]
+
+        # params = {'symptoms__name__in': symptom_names}
+
+        params = {'symptoms': f'{symptom1.name},{symptom2.name}'}
+        res = self.client.get(MEDICINES_URL, params)
+
+        s1 = MedicineSerializer(m1)
+        s2 = MedicineSerializer(m2)
+        s3 = MedicineSerializer(m3)
+        self.assertIn(s1.data, res.data)
+        self.assertIn(s2.data, res.data)
+        self.assertNotIn(s3.data, res.data)
