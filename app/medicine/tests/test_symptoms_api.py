@@ -7,7 +7,10 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Symptom
+from core.models import (
+    Symptom,
+    Medicine,
+)
 
 from medicine.serializers import SymptomSerializer
 
@@ -93,3 +96,53 @@ class PrivateSymptomsAPITests(TestCase):
         symptoms = Symptom.objects.filter(user = self.user)
         self.assertFalse(symptoms.exists())
 
+    def test_filter_symptoms_assigned_to_medicine(self):
+        """Test listing symptoms that are assigned to medicines"""
+        symptom1 = Symptom.objects.create(user=self.user, name='Sample symptom 1')
+        symptom2 = Symptom.objects.create(user=self.user, name='Sample symptom 2')
+        medicine = Medicine.objects.create(
+            name='Sample medicine',
+            user=self.user,
+            ref_text='AFI',
+            dispensing_size='200 ml',
+            dosage='12 - 24 ml',
+            precautions='NS',
+            preferred_use='Both'
+        )
+        medicine.symptoms.add(symptom1)
+
+        res = self.client.get(SYMPTOMS_URL, {'assigned_only': 1})
+
+        serializer1 = SymptomSerializer(symptom1)
+        serializer2 = SymptomSerializer(symptom2)
+        self.assertIn(serializer1.data, res.data)
+        self.assertNotIn(serializer2.data, res.data)
+
+    def test_filtered_symptoms_unique(self): # TODO: Test this
+        """Test filtered symptoms return unique items"""
+        symptom = Symptom.objects.create(user=self.user, name='Sample symptom')
+        Symptom.objects.create(user=self.user, name='Sample symptom 2')
+        medicine1 = Medicine.objects.create(
+            name='Sample medicine 1',
+            user=self.user,
+            ref_text='AFI',
+            dispensing_size='200 ml',
+            dosage='12 - 24 ml',
+            precautions='NS',
+            preferred_use='Both'
+        )
+        medicine1.symptoms.add(symptom)
+        medicine2 = Medicine.objects.create(
+            name='Sample medicine 2',
+            user=self.user,
+            ref_text='AFI',
+            dispensing_size='200 ml',
+            dosage='12 - 24 ml',
+            precautions='NS',
+            preferred_use='Both'
+        )
+        medicine2.symptoms.add(symptom)
+
+        res = self.client.get(SYMPTOMS_URL, {'assigned_only': 1})
+
+        self.assertGreaterEqual(len(res.data), 1)

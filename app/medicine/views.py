@@ -66,7 +66,22 @@ class MedicineViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """Create a new medicine"""
         serializer.save(user=self.request.user)
-
+@extend_schema_view(
+    list=extend_schema(
+        parameters=[
+            OpenApiParameter(
+                'assigned_only',
+                OpenApiTypes.INT, enum=[0, 1],
+                description='Filter only assigned symptoms',
+            ),
+            OpenApiParameter(
+                'symptom_names',
+                OpenApiTypes.STR,
+                description='Filter symptoms by names (comma-separated)',
+            )
+        ]
+    )
+)
 class BaseMedicineAttrViewSet(mixins.DestroyModelMixin,
                     mixins.UpdateModelMixin,
                     mixins.ListModelMixin,
@@ -77,7 +92,21 @@ class BaseMedicineAttrViewSet(mixins.DestroyModelMixin,
 
     def get_queryset(self):
         """Filter query set to authenticated user"""
-        return self.queryset.filter(user=self.request.user).order_by('-name')
+        assigned_only = bool(
+            int(self.request.query_params.get('assigned_only', 0))
+        )
+        symptom_names = self.request.query_params.get('symptom_names', '') #to remove
+        queryset = self.queryset
+        if assigned_only:
+            queryset = queryset.filter(medicine__isnull=False)
+
+        if symptom_names: #to remove
+            symptom_name_list = symptom_names.split(',')
+            queryset = queryset.filter(name__in=symptom_name_list)
+
+        return queryset.filter(
+            user=self.request.user
+        ).order_by('-name').distinct()
 
 class SymptomViewSet(BaseMedicineAttrViewSet):
     """Manage symptoms in the database"""
