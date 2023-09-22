@@ -25,14 +25,13 @@ from medicine import serializers
     list=extend_schema(
         parameters=[
             OpenApiParameter(
-                'ingredients',
+                'symptoms',
                 OpenApiTypes.STR,
-                description='Comma separated list of ingredients',
+                description='Comma separated list of symptoms',
             )
         ]
     )
 )
-
 class MedicineViewSet(viewsets.ModelViewSet):
     """View for manage medicine APIs"""
     serializer_class = serializers.MedicineDetailSerializer
