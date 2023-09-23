@@ -1,2 +1,2 @@
-# FooDiffusion
-Recipe App API
+# AyushPI-API
+Ayurvedic Medicines App
