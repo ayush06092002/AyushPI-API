@@ -8,6 +8,8 @@ https://arogya.maharashtra.gov.in/Site/PDFs/EDL_Ayurveda.pdf
 The API page:
 ![Screenshot 2024-01-24 215727](https://github.com/ayush06092002/AyushPI-API/assets/22142132/6265aacc-3a6b-4d1e-bf9c-9841854edff6)
 
+## Note
+The CORS Error is now fixed and you can make api calls from your code
 
 ## Table of Contents
 - [Tech Stack](#tech-stack)
